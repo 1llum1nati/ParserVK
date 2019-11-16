@@ -1,0 +1,10 @@
+/home/r3pl1c4nt/Projects/parser/parser/bin/Debug/parser.exe
+/home/r3pl1c4nt/Projects/parser/parser/bin/Debug/parser.pdb
+/home/r3pl1c4nt/Projects/parser/parser/obj/x86/Debug/parser.csprojAssemblyReference.cache
+/home/r3pl1c4nt/Projects/parser/parser/obj/x86/Debug/parser.exe
+/home/r3pl1c4nt/Projects/parser/parser/obj/x86/Debug/parser.pdb
+/home/r3pl1c4nt/Projects/parser/parser/bin/Debug/WebDriver.dll
+/home/r3pl1c4nt/Projects/parser/parser/bin/Debug/WebDriver.xml
+/home/r3pl1c4nt/Projects/parser/parser/obj/x86/Debug/parser.csproj.CopyComplete
+/home/r3pl1c4nt/Projects/parser/parser/bin/Debug/Newtonsoft.Json.dll
+/home/r3pl1c4nt/Projects/parser/parser/bin/Debug/Newtonsoft.Json.xml
