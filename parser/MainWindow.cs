@@ -67,7 +67,9 @@ public partial class MainWindow : Gtk.Window
 
         static ChromeDriver driver = new ChromeDriver(InitOptions());
         static IJavaScriptExecutor jsExecutor = driver;
-        int oldCount, textCounter, imgCounter, allThumbsCounter, idTextIteration = 19, idImgIteration = 19, allFileIteration = 19;
+        int oldCount, textCounter, imgCounter, allThumbsCounter, 
+            idTextWriteIteration = 19, idImgWriteIteration = 19, allThumbsWriteIteration = 19, 
+            idTextReadIteration = 19, idImgReadIteration = 19, allThumbsReadIteration = 19;
 
         List<IWebElement> Elements = new List<IWebElement>();
         List<string> PostID = new List<string>(),
@@ -94,6 +96,8 @@ public partial class MainWindow : Gtk.Window
             Thread textThread = new Thread(() => WriteText());
             Thread imagesThread = new Thread(() => WriteImages());
             Thread allThumbsThread = new Thread(() => WriteAllThumbs());
+            Thread ReadThread = new Thread(() => ReadRand());
+
             Thread planningThread = new Thread(() => Planning());
 
             for (int i = 0; i != 20; ++i)
@@ -109,10 +113,12 @@ public partial class MainWindow : Gtk.Window
             ClearEntrys();
             driver.Navigate().GoToUrl("https://vk.com");
             Login();
+            planningThread.Start();
             textThread.Start();
             imagesThread.Start();
             allThumbsThread.Start();
-            planningThread.Start();
+            ReadThread.Start();
+
             while (true)
             {
                 oldCount = Elements.Count;
@@ -132,26 +138,29 @@ public partial class MainWindow : Gtk.Window
         {
             while(true)
             {
-                if(idTextIteration >= 19)
+                if (idTextWriteIteration >= 19 && idTextReadIteration >= 19)
                 {
-                    idTextIteration = 0;
+                    idTextWriteIteration = 0;
+                    idTextReadIteration = 0;
                     for (int i = 0; i != 20; ++i)
                     {
                         idTextPlanning[i] = rnd.Next(3);
                     }
                 }
 
-                if (idImgIteration >= 19)
+                if (idImgWriteIteration >= 19 && idImgReadIteration >= 19)
                 {
-                    idImgIteration = 0;
+                    idImgWriteIteration = 0;
+                    idImgReadIteration = 0;
                     for (int i = 0; i != 20; ++i)
                     {
                         idImgPlanning[i] = rnd.Next(3);
                     }
                 }
-                if (allFileIteration >= 19)
+                if (allThumbsWriteIteration >= 19 && allThumbsReadIteration >= 19)
                 {
-                    allFileIteration = 0;
+                    allThumbsWriteIteration = 0;
+                    allThumbsReadIteration = 0;
                     for (int i = 0; i != 20; ++i)
                     {
                         idTextPlanning[i] = rnd.Next(3);
@@ -165,10 +174,10 @@ public partial class MainWindow : Gtk.Window
         {
             while (true)
             {
-                if (idTextIteration < 19)
+                if (idTextWriteIteration < 19)
                 {
-                    ++idTextIteration;
-                    if (idTextPlanning[idTextIteration] == 0)
+                    ++idTextWriteIteration;
+                    if (idTextPlanning[idTextWriteIteration] == 0)
                     {
                         while (!idTextIsFree)
                             Thread.Sleep(100);
@@ -197,10 +206,10 @@ public partial class MainWindow : Gtk.Window
         {
             while(true)
             {
-                if (idImgIteration < 19)
+                if (idImgWriteIteration < 19)
                 {
-                    ++idImgIteration;
-                    if (idImgPlanning[idImgIteration] == 0)
+                    ++idImgWriteIteration;
+                    if (idImgPlanning[idImgWriteIteration] == 0)
                     {
                         while (!idImgIsFree)
                             Thread.Sleep(100);
@@ -229,10 +238,10 @@ public partial class MainWindow : Gtk.Window
         {
             while (true)
             {
-                if (allFileIteration < 19)
+                if (allThumbsWriteIteration < 19)
                 {
-                    ++allFileIteration;
-                    if (allThumbsFilePlanning[allFileIteration] == 0)
+                    ++allThumbsWriteIteration;
+                    if (allThumbsFilePlanning[allThumbsWriteIteration] == 0)
                     {
                         while (!allThumbsIsFree)
                             Thread.Sleep(100);
@@ -466,32 +475,49 @@ public partial class MainWindow : Gtk.Window
                 Geotags.Add("");
             }
         }
+
+        protected void ReadRand()
+        {
+            while (true)
+            {
+                if (idTextReadIteration < 19)
+                {
+                    ++idTextReadIteration;
+                    if(idTextPlanning[idTextReadIteration] == 1)
+                    {
+                        ReadIdText();
+                    }
+                }
+                if (idImgReadIteration < 19)
+                {
+                    ++idImgReadIteration;
+                    if(idImgPlanning[idImgReadIteration] == 1)
+                    {
+                        ReadIdImg();
+                    }
+                }
+                if (allThumbsReadIteration < 19)
+                {
+                    ++allThumbsReadIteration;
+                    if (allThumbsFilePlanning[allThumbsReadIteration] == 1)
+                    {
+                        ReadAllFile();
+                    }
+                }
+            }
+        }
     }
 
-    protected static internal void ReadRand()
-    {
-        int Temp = rnd.Next(3);
-        if (Temp == 0)
-        {
-            ReadIdText();
-        }
-        if (Temp == 1)
-        {
-            ReadIdImg();
-        }
-        if (Temp == 2)
-        {
-            ReadAllFile();
-        }
-    }
 
-    protected static internal void ReadIdText()
+
+    protected void ReadIdText()
     {
-        //lock (idTextLocker)
-        if(idTextIsFree)
+        while (!idTextIsFree)
+            Thread.Sleep(100);
+        if (idTextIsFree)
         {
             idTextIsFree = false;
-            Process readerIdText = new Process();
+            /*Process readerIdText = new Process();
             string args = "--command nano " + textPath;
             ProcessStartInfo readInfo = new ProcessStartInfo
             {
@@ -499,18 +525,23 @@ public partial class MainWindow : Gtk.Window
                 Arguments = args
             };
             readerIdText.StartInfo = readInfo;
-            readerIdText.Start();
+            readerIdText.Start();*/
+            using (StreamReader srIdText = new StreamReader(textPath, true))
+            {
+                Console.WriteLine(srIdText.ReadToEnd());
+            }
             idTextIsFree = true;
         }
     }
 
-    protected static internal void ReadIdImg()
+    protected void ReadIdImg()
     {
-        //lock (idImgLocker)
-        if(idImgIsFree)
+        while (!idImgIsFree)
+            Thread.Sleep(100);
+        if (idImgIsFree)
         {
             idImgIsFree = false;
-            Process readerIdImg = new Process();
+            /*Process readerIdImg = new Process();
             string args = "--command nano " + imgPath;
             ProcessStartInfo readInfo = new ProcessStartInfo
             {
@@ -518,18 +549,24 @@ public partial class MainWindow : Gtk.Window
                 Arguments = args
             };
             readerIdImg.StartInfo = readInfo;
-            readerIdImg.Start();
+            readerIdImg.Start();*/
+            using (StreamReader srIdImg = new StreamReader(imgPath, true))
+            {
+                Console.WriteLine(srIdImg.ReadToEnd());
+            }
             idImgIsFree = true;
         }
     }
 
-    protected static internal void ReadAllFile()
+    protected void ReadAllFile()
     {
-        //lock (allLocker)
-        if(allThumbsIsFree)
+        while (!allThumbsIsFree)
+            Thread.Sleep(100);
+        if (allThumbsIsFree)
         {
             allThumbsIsFree = false;
-            Process readerAll = new Process();
+
+            /*Process readerAll = new Process();
             string args = "--command nano " + allThumbsPath;
             ProcessStartInfo readInfo = new ProcessStartInfo
             {
@@ -537,7 +574,11 @@ public partial class MainWindow : Gtk.Window
                 Arguments = args
             };
             readerAll.StartInfo = readInfo;
-            readerAll.Start();
+            readerAll.Start();*/
+            using (StreamReader srAllThumbs = new StreamReader(allThumbsPath, true))
+            {
+                Console.WriteLine(srAllThumbs.ReadToEnd());
+            }
             allThumbsIsFree = true;
         }
     }
@@ -560,8 +601,8 @@ public partial class MainWindow : Gtk.Window
 
     protected void OnButton5Clicked(object sender, EventArgs e)
     {
-        Thread readRand = new Thread(() => ReadRand());
-        readRand.Start();
+        //Thread readRand = new Thread(() => ReadRand());
+        //readRand.Start();
     }
 
     protected void OnButton6Clicked(object sender, EventArgs e)
