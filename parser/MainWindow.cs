@@ -8,6 +8,7 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Threading;
 using System.Diagnostics;
+using System.IO.Pipes;
 
 public partial class MainWindow : Gtk.Window
 {
@@ -110,7 +111,9 @@ public partial class MainWindow : Gtk.Window
             CloseStreams();
             login = log;
             password = pass;
-            ClearEntrys();
+
+
+
             driver.Navigate().GoToUrl("https://vk.com");
             Login();
             planningThread.Start();
@@ -192,7 +195,7 @@ public partial class MainWindow : Gtk.Window
                                     ID = PostID[i].Replace("\n", " "),
                                     PostText = TextElements[i].Replace("\n", " ")
                                 };
-                                swText.WriteLine(JsonConvert.SerializeObject(temp, Formatting.Indented) + ",");
+                                swText.WriteLine(JsonConvert.SerializeObject(temp, Formatting.None) + ",");
                                 ++textCounter;
                             }
                         }
@@ -224,7 +227,7 @@ public partial class MainWindow : Gtk.Window
                                     ID = PostID[i].Replace("\n", " "),
                                     Img = ImagesLinks[i].Replace("\n", " ")
                                 };
-                                swImg.WriteLine(JsonConvert.SerializeObject(temp, Formatting.Indented) + ",");
+                                swImg.WriteLine(JsonConvert.SerializeObject(temp, Formatting.None) + ",");
                                 ++imgCounter;
                             }
                         }
@@ -265,7 +268,7 @@ public partial class MainWindow : Gtk.Window
                                     Poster = PostersLinks[i].Replace("\n", " "),
                                     MediaThumbedLink = MediaThumbedLinks[i].Replace("\n", " ")
                                 };
-                                swAll.WriteLine(JsonConvert.SerializeObject(temp, Formatting.Indented) + ",");
+                                swAll.WriteLine(JsonConvert.SerializeObject(temp, Formatting.None) + ",");
                                 ++allThumbsCounter;
                             }
                         }
@@ -601,19 +604,55 @@ public partial class MainWindow : Gtk.Window
 
     protected void OnButton5Clicked(object sender, EventArgs e)
     {
-        //Thread readRand = new Thread(() => ReadRand());
-        //readRand.Start();
+        Process readerAll = new Process();
+        string args = "--command sudo systemctl start trash.service";
+        ProcessStartInfo readInfo = new ProcessStartInfo
+        {
+            FileName = "lxterminal",
+            Arguments = args
+        };
+        readerAll.StartInfo = readInfo;
+        readerAll.Start();
     }
 
     protected void OnButton6Clicked(object sender, EventArgs e)
     {
-        //Thread readSecond = new Thread(() => ReadIdImg());
-        //readSecond.Start();
+        Process readerAll = new Process();
+        string args = "--command sudo systemctl stop trash.service";
+        ProcessStartInfo readInfo = new ProcessStartInfo
+        {
+            FileName = "lxterminal",
+            Arguments = args
+        };
+        readerAll.StartInfo = readInfo;
+        readerAll.Start();
     }
+
+    protected void ThreadStartClient() 
+    {
+        using (NamedPipeClientStream pipeStream = new NamedPipeClientStream("pipes"))
+        {
+            pipeStream.Connect();
+            Console.WriteLine("[Client] Pipe connection established");
+        }
+    }
+
 
     protected void OnButton7Clicked(object sender, EventArgs e)
     {
-        //Thread readThird = new Thread(() => ReadAllFile());
-        //readThird.Start();
+        Process readerAll = new Process();
+        string args = "--command systemctl status trash.service";
+        ProcessStartInfo readInfo = new ProcessStartInfo
+        {
+            FileName = "lxterminal",
+            Arguments = args
+        };
+        readerAll.StartInfo = readInfo;
+        readerAll.Start();
+
+
+        Thread ClientThread = new Thread(ThreadStartClient);
+        ClientThread.Start();
+
     }
 }
