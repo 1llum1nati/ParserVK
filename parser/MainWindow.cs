@@ -9,6 +9,8 @@ using Newtonsoft.Json;
 using System.Threading;
 using System.Diagnostics;
 using System.IO.Pipes;
+using System.Text;
+using Mono.Data.Sqlite;
 
 public partial class MainWindow : Gtk.Window
 {
@@ -51,8 +53,14 @@ public partial class MainWindow : Gtk.Window
     public static readonly string textPath = @"/home/r3pl1c4nt/Docs/idText.json",
                                   imgPath = @"/home/r3pl1c4nt/Docs/idImg.json",
                                   allThumbsPath = @"/home/r3pl1c4nt/Docs/allThumbs.json";
-    public static bool idTextIsFree = true, idImgIsFree = true, allThumbsIsFree = true;
+    public static bool idTextIsFree = true, idImgIsFree = true, allThumbsIsFree = true, clientIsConnected = false;
+    public static int count = 2;
     public static Random rnd = new Random();
+    public static string pathDB = "/home/r3pl1c4nt/Docs/TestDB.db";
+    public static string connectionString = String.Format("Data Source={0};Version=3;", pathDB);
+
+    NamedPipeClientStream pipeStream = new NamedPipeClientStream("pipes");
+
 
     private class Chrome : MainWindow
     {
@@ -68,9 +76,10 @@ public partial class MainWindow : Gtk.Window
 
         static ChromeDriver driver = new ChromeDriver(InitOptions());
         static IJavaScriptExecutor jsExecutor = driver;
-        int oldCount, textCounter, imgCounter, allThumbsCounter, 
-            idTextWriteIteration = 19, idImgWriteIteration = 19, allThumbsWriteIteration = 19, 
-            idTextReadIteration = 19, idImgReadIteration = 19, allThumbsReadIteration = 19;
+        int oldCount, textCounter, imgCounter, allThumbsCounter,
+            idTextWriteIteration = 19, idImgWriteIteration = 19, allThumbsWriteIteration = 19,
+            idTextReadIteration = 19, idImgReadIteration = 19, allThumbsReadIteration = 19,
+            daemonIdTextIteration = 19, daemonIdImgIteration = 19, daemonAllThumbsIteration = 19;
 
         List<IWebElement> Elements = new List<IWebElement>();
         List<string> PostID = new List<string>(),
@@ -94,34 +103,35 @@ public partial class MainWindow : Gtk.Window
 
         protected internal void Init(string log, string pass)
         {
-            Thread textThread = new Thread(() => WriteText());
-            Thread imagesThread = new Thread(() => WriteImages());
-            Thread allThumbsThread = new Thread(() => WriteAllThumbs());
+            Thread WriteThread = new Thread(() => WriteAll());
             Thread ReadThread = new Thread(() => ReadRand());
+            Thread DaemonThread = new Thread(() => Daemon());
 
             Thread planningThread = new Thread(() => Planning());
 
             for (int i = 0; i != 20; ++i)
             {
-                idTextPlanning.Add(rnd.Next(3));
-                idImgPlanning.Add(rnd.Next(3));
-                allThumbsFilePlanning.Add(rnd.Next(3));
+                idTextPlanning.Add(rnd.Next(count));
+                idImgPlanning.Add(rnd.Next(count));
+                allThumbsFilePlanning.Add(rnd.Next(count));
             }
 
+            CreateDB();
             CloseStreams();
             login = log;
             password = pass;
 
-
-
             driver.Navigate().GoToUrl("https://vk.com");
             Login();
-            planningThread.Start();
-            textThread.Start();
-            imagesThread.Start();
-            allThumbsThread.Start();
-            ReadThread.Start();
 
+            planningThread.Start();
+            WriteThread.Start();
+            ReadThread.Start();
+            if (count == 3)
+            {
+                pipeStream.Connect();
+                DaemonThread.Start();
+            }
             while (true)
             {
                 oldCount = Elements.Count;
@@ -141,39 +151,155 @@ public partial class MainWindow : Gtk.Window
         {
             while(true)
             {
-                if (idTextWriteIteration >= 19 && idTextReadIteration >= 19)
+                if (count == 2)
                 {
-                    idTextWriteIteration = 0;
-                    idTextReadIteration = 0;
-                    for (int i = 0; i != 20; ++i)
+                    if (idTextWriteIteration >= 19 && idTextReadIteration >= 19)
                     {
-                        idTextPlanning[i] = rnd.Next(3);
+                        idTextWriteIteration = 0;
+                        idTextReadIteration = 0;
+                        for (int i = 0; i != 20; ++i)
+                        {
+                            idTextPlanning[i] = rnd.Next(count);
+                        }
                     }
-                }
 
-                if (idImgWriteIteration >= 19 && idImgReadIteration >= 19)
-                {
-                    idImgWriteIteration = 0;
-                    idImgReadIteration = 0;
-                    for (int i = 0; i != 20; ++i)
+                    if (idImgWriteIteration >= 19 && idImgReadIteration >= 19)
                     {
-                        idImgPlanning[i] = rnd.Next(3);
+                        idImgWriteIteration = 0;
+                        idImgReadIteration = 0;
+                        for (int i = 0; i != 20; ++i)
+                        {
+                            idImgPlanning[i] = rnd.Next(count);
+                        }
+                    }
+                    if (allThumbsWriteIteration >= 19 && allThumbsReadIteration >= 19)
+                    {
+                        allThumbsWriteIteration = 0;
+                        allThumbsReadIteration = 0;
+                        for (int i = 0; i != 20; ++i)
+                        {
+                            allThumbsFilePlanning[i] = rnd.Next(count);
+                        }
                     }
                 }
-                if (allThumbsWriteIteration >= 19 && allThumbsReadIteration >= 19)
+                if (count == 3)
                 {
-                    allThumbsWriteIteration = 0;
-                    allThumbsReadIteration = 0;
-                    for (int i = 0; i != 20; ++i)
+                    if (idTextWriteIteration >= 19 && idTextReadIteration >= 19 && daemonIdTextIteration >= 19)
                     {
-                        idTextPlanning[i] = rnd.Next(3);
+                        idTextWriteIteration = 0;
+                        idTextReadIteration = 0;
+                        daemonIdTextIteration = 0;
+                        for (int i = 0; i != 20; ++i)
+                        {
+                            idTextPlanning[i] = rnd.Next(count);
+                        }
+                    }
+
+                    if (idImgWriteIteration >= 19 && idImgReadIteration >= 19 && daemonIdImgIteration >= 19)
+                    {
+                        idImgWriteIteration = 0;
+                        idImgReadIteration = 0;
+                        daemonIdImgIteration = 0;
+                        for (int i = 0; i != 20; ++i)
+                        {
+                            idImgPlanning[i] = rnd.Next(count);
+                        }
+                    }
+                    if (allThumbsWriteIteration >= 19 && allThumbsReadIteration >= 19 && daemonAllThumbsIteration >= 19)
+                    {
+                        allThumbsWriteIteration = 0;
+                        allThumbsReadIteration = 0;
+                        daemonAllThumbsIteration = 0;
+                        for (int i = 0; i != 20; ++i)
+                        {
+                            allThumbsFilePlanning[i] = rnd.Next(count);
+                        }
                     }
                 }
             }
         }
        
+        protected void Daemon()
+        {
+            StreamWriter sw = new StreamWriter(pipeStream)
+            {
+                AutoFlush = true
+            };
+            while (true)
+            {
+                if (daemonIdTextIteration < 19)
+                {
+                    ++daemonIdTextIteration;
+                    if (idTextPlanning[daemonIdTextIteration] == 2)
+                    {
+                        while (!idTextIsFree)
+                            Thread.Sleep(100);
+                        idTextIsFree = false;
 
-        protected void WriteText()
+                        sw.WriteLine("text");
+                        StreamReader sr = new StreamReader(pipeStream);
+
+                        while (true)
+                        {
+                            string temp = sr.ReadLine();
+
+                            if (temp == "end")
+                                break;
+                        }
+
+                        idTextIsFree = true;
+                    }
+                }
+                if (daemonIdImgIteration < 19)
+                {
+                    ++daemonIdImgIteration;
+                    if (idImgPlanning[daemonIdImgIteration] == 2)
+                    {
+                        while (!idImgIsFree)
+                            Thread.Sleep(100);
+                        idImgIsFree = false;
+
+                        sw.WriteLine("img");
+                        StreamReader sr = new StreamReader(pipeStream);
+
+                        while (true)
+                        {
+                            string temp = sr.ReadLine();
+
+                            if (temp == "end")
+                                break;
+                        }
+                        
+                        idImgIsFree = true;
+                    }
+                }
+                if (daemonAllThumbsIteration < 19)
+                {
+                    ++daemonAllThumbsIteration;
+                    if (allThumbsFilePlanning[daemonAllThumbsIteration] == 2)
+                    {
+                        while (!allThumbsIsFree)
+                            Thread.Sleep(100);
+                        allThumbsIsFree = false;
+
+                        sw.WriteLine("allThumbs");
+                        StreamReader sr = new StreamReader(pipeStream);
+
+                        while (true)
+                        {
+                            string temp = sr.ReadLine();
+
+                            if (temp == "end")
+                                break;
+                        }
+
+                        allThumbsIsFree = true;
+                    }
+                }
+            }
+        }
+
+        protected void WriteAll()
         {
             while (true)
             {
@@ -202,13 +328,7 @@ public partial class MainWindow : Gtk.Window
                         idTextIsFree = true;
                     }
                 }
-            }
-        }
 
-        protected void WriteImages()
-        {
-            while(true)
-            {
                 if (idImgWriteIteration < 19)
                 {
                     ++idImgWriteIteration;
@@ -234,13 +354,7 @@ public partial class MainWindow : Gtk.Window
                         idImgIsFree = true;
                     }
                 }
-            }
-        }
 
-        protected void WriteAllThumbs()
-        {
-            while (true)
-            {
                 if (allThumbsWriteIteration < 19)
                 {
                     ++allThumbsWriteIteration;
@@ -275,6 +389,35 @@ public partial class MainWindow : Gtk.Window
                         allThumbsIsFree = true;
                     }
                 }
+            }
+        }
+
+        void CreateDB()
+        {
+            Console.OutputEncoding = Encoding.UTF8;
+
+            if (File.Exists(pathDB))
+                File.Delete(pathDB);
+
+            SqliteConnection.CreateFile(pathDB);
+
+            using (SqliteConnection connection = new SqliteConnection(connectionString))
+            {
+                string commandIDTEXT = "CREATE TABLE idText (id TEXT, text TEXT)",
+                       commandIDIMG = "CREATE TABLE idIMG (id TEXT, img TEXT)",
+                       commandALLTHUMBS = "CREATE TABLE allThumbs (id TEXT, audios TEXT, videos TEXT, GIF TEXT, doc TEXT," +
+                        "article TEXT, poll TEXT, tLink TEXT, geotag TEXT, poster TEXT, mtLink TEXT)";
+                connection.Open();
+                using (SqliteCommand liteCommand = new SqliteCommand(commandIDTEXT, connection))
+                {
+                    liteCommand.ExecuteNonQuery();
+                    liteCommand.CommandText = commandIDIMG;
+                    liteCommand.ExecuteNonQuery();
+                    liteCommand.CommandText = commandALLTHUMBS;
+                    liteCommand.ExecuteNonQuery();
+                }
+
+                connection.Close();
             }
         }
 
@@ -630,11 +773,10 @@ public partial class MainWindow : Gtk.Window
 
     protected void ThreadStartClient() 
     {
-        using (NamedPipeClientStream pipeStream = new NamedPipeClientStream("pipes"))
-        {
-            pipeStream.Connect();
-            Console.WriteLine("[Client] Pipe connection established");
-        }
+
+            count = 3;
+
+        
     }
 
 
@@ -649,10 +791,20 @@ public partial class MainWindow : Gtk.Window
         };
         readerAll.StartInfo = readInfo;
         readerAll.Start();
+    }
 
-
-        Thread ClientThread = new Thread(ThreadStartClient);
-        ClientThread.Start();
-
+    protected void OnButton1Clicked(object sender, EventArgs e)
+    {
+        Process readerAll = new Process();
+        string args = "--command sudo systemctl restart trash.service";
+        ProcessStartInfo readInfo = new ProcessStartInfo
+        {
+            FileName = "lxterminal",
+            Arguments = args
+        };
+        readerAll.StartInfo = readInfo;
+        readerAll.Start();
+        Thread.Sleep(6000);
+        ThreadStartClient();
     }
 }

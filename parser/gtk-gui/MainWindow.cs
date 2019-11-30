@@ -25,6 +25,8 @@ public partial class MainWindow
 
 	private global::Gtk.Button button7;
 
+	private global::Gtk.Button button1;
+
 	protected virtual void Build()
 	{
 		global::Stetic.Gui.Initialize(this);
@@ -103,7 +105,7 @@ public partial class MainWindow
 		this.button5.CanFocus = true;
 		this.button5.Name = "button5";
 		this.button5.UseUnderline = true;
-		this.button5.Label = global::Mono.Unix.Catalog.GetString("Read idText.json");
+		this.button5.Label = global::Mono.Unix.Catalog.GetString("start daemon");
 		this.vbox1.Add(this.button5);
 		global::Gtk.Box.BoxChild w7 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.button5]));
 		w7.Position = 6;
@@ -118,7 +120,7 @@ public partial class MainWindow
 		this.button6.CanFocus = true;
 		this.button6.Name = "button6";
 		this.button6.UseUnderline = true;
-		this.button6.Label = global::Mono.Unix.Catalog.GetString("Read idImg.json");
+		this.button6.Label = global::Mono.Unix.Catalog.GetString("stop daemon");
 		this.vbox3.Add(this.button6);
 		global::Gtk.Box.BoxChild w8 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.button6]));
 		w8.Position = 0;
@@ -129,7 +131,7 @@ public partial class MainWindow
 		this.button7.CanFocus = true;
 		this.button7.Name = "button7";
 		this.button7.UseUnderline = true;
-		this.button7.Label = global::Mono.Unix.Catalog.GetString("Read allThumbsFile.json");
+		this.button7.Label = global::Mono.Unix.Catalog.GetString("status daemon");
 		this.vbox3.Add(this.button7);
 		global::Gtk.Box.BoxChild w9 = ((global::Gtk.Box.BoxChild)(this.vbox3[this.button7]));
 		w9.Position = 1;
@@ -140,18 +142,30 @@ public partial class MainWindow
 		w10.Position = 7;
 		w10.Expand = false;
 		w10.Fill = false;
+		// Container child vbox1.Gtk.Box+BoxChild
+		this.button1 = new global::Gtk.Button();
+		this.button1.CanFocus = true;
+		this.button1.Name = "button1";
+		this.button1.UseUnderline = true;
+		this.button1.Label = global::Mono.Unix.Catalog.GetString("Try connect");
+		this.vbox1.Add(this.button1);
+		global::Gtk.Box.BoxChild w11 = ((global::Gtk.Box.BoxChild)(this.vbox1[this.button1]));
+		w11.Position = 8;
+		w11.Expand = false;
+		w11.Fill = false;
 		this.Add(this.vbox1);
 		if ((this.Child != null))
 		{
 			this.Child.ShowAll();
 		}
 		this.DefaultWidth = 400;
-		this.DefaultHeight = 293;
+		this.DefaultHeight = 360;
 		this.Show();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
 		this.button2.Clicked += new global::System.EventHandler(this.OnButton2Clicked);
 		this.button5.Clicked += new global::System.EventHandler(this.OnButton5Clicked);
 		this.button6.Clicked += new global::System.EventHandler(this.OnButton6Clicked);
 		this.button7.Clicked += new global::System.EventHandler(this.OnButton7Clicked);
+		this.button1.Clicked += new global::System.EventHandler(this.OnButton1Clicked);
 	}
 }
