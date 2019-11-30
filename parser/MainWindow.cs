@@ -773,10 +773,7 @@ public partial class MainWindow : Gtk.Window
 
     protected void ThreadStartClient() 
     {
-
-            count = 3;
-
-        
+        count = 3;
     }
 
 

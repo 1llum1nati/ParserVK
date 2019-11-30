@@ -160,7 +160,7 @@ public partial class MainWindow
 		}
 		this.DefaultWidth = 400;
 		this.DefaultHeight = 360;
-		this.Show();
+		//this.Show();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler(this.OnDeleteEvent);
 		this.button2.Clicked += new global::System.EventHandler(this.OnButton2Clicked);
 		this.button5.Clicked += new global::System.EventHandler(this.OnButton5Clicked);
