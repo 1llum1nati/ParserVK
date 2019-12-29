@@ -1,0 +1,9 @@
+/home/r3pl1c4nt/Projects/trash/trash/bin/Debug/trash.exe
+/home/r3pl1c4nt/Projects/trash/trash/bin/Debug/trash.pdb
+/home/r3pl1c4nt/Projects/trash/trash/obj/x86/Debug/trash.csprojAssemblyReference.cache
+/home/r3pl1c4nt/Projects/trash/trash/obj/x86/Debug/trash.exe
+/home/r3pl1c4nt/Projects/trash/trash/obj/x86/Debug/trash.pdb
+/home/r3pl1c4nt/Projects/trash/trash/bin/Debug/Newtonsoft.Json.dll
+/home/r3pl1c4nt/Projects/trash/trash/bin/Debug/Newtonsoft.Json.xml
+/home/r3pl1c4nt/Projects/trash/trash/obj/x86/Debug/trash.csproj.CopyComplete
+/home/r3pl1c4nt/Projects/trash/trash/bin/Debug/Mono.Data.Sqlite.dll

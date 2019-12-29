@@ -1,0 +1,16 @@
+[Unit]
+Description=NET Web API App running on Ubuntu
+
+[Service]
+WorkingDirectory=/home/r3pl1c4nt/Projects/trash/trash/bin/Debug
+ExecStart=/usr/bin/mono /home/r3pl1c4nt/Projects/trash/trash/bin/Debug/trash.exe
+KillSignal=SIGINT
+SyslogIdentifier=dotnet-example
+
+User=r3pl1c4nt
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+[Install]
+WantedBy=multi-user.target
+
